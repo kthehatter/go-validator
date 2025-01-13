@@ -42,89 +42,88 @@ import (
 
 func main() {
 
-// Create a new Gin router
+    // Create a new Gin router
 
-r := gin.New()
+    r := gin.New()
 
-// Define validation rules
 
-// Define validation rules
+    // Define validation rules
 
-validationOptions := []validator.ValidationOption{
+    validationOptions := []validator.ValidationOption{
 
-	{
-	
-	Key: "username",
-	
-	IsOptional: false,
-	
-	Validators: []validator.Validator{
-	
-	validator.CreateValidator(validator.IsNotEmpty, "Username is required"),
-	
-	validator.CreateValidator(validator.IsAlphanumeric, "Username must be alphanumeric"),
-	
-		},
-	
-	},
+        {
+        
+            Key: "username",
+            
+            IsOptional: false,
+            
+            Validators: []validator.Validator{
+            
+            validator.CreateValidator(validator.IsNotEmpty, "Username is required"),
+            
+            validator.CreateValidator(validator.IsAlphanumeric, "Username must be alphanumeric"),
+        
+            },
+        
+        },
 
-	{
-	
-	Key: "email",
-	
-	IsOptional: false,
-	
-	Validators: []validator.Validator{
-	
-	validator.CreateValidator(validator.IsNotEmpty, "Email is required"),
-	
-	validator.CreateValidator(validator.IsEmail, "Invalid email address"),
-	
-	},
-	
-		},
-	
-	{
-	
-	Key: "password",
-	
-	IsOptional: false,
-	
-	Validators: []validator.Validator{
-	
-	validator.CreateValidator(validator.IsNotEmpty, "Password is required"),
-	
-	validator.CreateValidator(validator.MinLength(6), "Password must be at least 6 characters"),
-	
-		},
-	
-	},
+        {
+        
+            Key: "email",
+            
+            IsOptional: false,
+            
+            Validators: []validator.Validator{
+            
+            validator.CreateValidator(validator.IsNotEmpty, "Email is required"),
+            
+            validator.CreateValidator(validator.IsEmail, "Invalid email address"),
+        
+            },
+        
+        },
+        
+        {
+        
+            Key: "password",
+            
+            IsOptional: false,
+            
+            Validators: []validator.Validator{
+            
+            validator.CreateValidator(validator.IsNotEmpty, "Password is required"),
+            
+            validator.CreateValidator(validator.MinLength(6), "Password must be at least 6 characters"),
+        
+            },
+        
+        },
 
-}
+    }
 
-// Apply the validation middleware to the POST /user endpoint
+    // Apply the validation middleware to the POST /user endpoint
 
-r.POST("/user", ginadapter.Middleware(validationOptions), func(c *gin.Context) {
+    r.POST("/user", ginadapter.Middleware(validationOptions), func(c *gin.Context) {
 
-// Retrieve the validated body from the context
+    // Retrieve the validated body from the context
 
-body := c.MustGet("validatedBody").(gin.H)
+    body := c.MustGet("validatedBody").(gin.H)
 
-// Process the data (for demonstration, just return it)
+    // Process the data (for demonstration, just return it)
 
-c.JSON(200, gin.H{
+    c.JSON(200, gin.H{
 
-"message": "User created successfully",
+        "message": "User created successfully",
 
-"data": body,
+        "data": body,
 
-})
+    })
 
-})  
+    })  
 
-// Start the Gin server
+    // Start the Gin server
 
-r.Run(":8080")
+    r.Run(":8080")
 
 }
 
