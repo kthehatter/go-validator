@@ -3,7 +3,6 @@
 A custom validator package for Go applications.
 ## Installation
  
-
 ```bash
 
 go get github.com/kthehatter/go-validator/validator
