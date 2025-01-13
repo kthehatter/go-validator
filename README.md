@@ -48,55 +48,57 @@ r := gin.New()
 
 // Define validation rules
 
+// Define validation rules
+
 validationOptions := []validator.ValidationOption{
 
-{
+	{
+	
+	Key: "username",
+	
+	IsOptional: false,
+	
+	Validators: []validator.Validator{
+	
+	validator.CreateValidator(validator.IsNotEmpty, "Username is required"),
+	
+	validator.CreateValidator(validator.IsAlphanumeric, "Username must be alphanumeric"),
+	
+		},
+	
+	},
 
-Key: "username",
-
-IsOptional: false,
-
-Validators: []validator.Validator{
-
-validator.CreateValidator(validator.IsNotEmpty, "Username is required"),
-
-validator.CreateValidator(validator.IsAlphanumeric, "Username must be alphanumeric"),
-
-},
-
-},
-
-{
-
-Key: "email",
-
-IsOptional: false,
-
-Validators: []validator.Validator{
-
-validator.CreateValidator(validator.IsNotEmpty, "Email is required"),
-
-validator.CreateValidator(validator.IsEmail, "Invalid email address"),
-
-},
-
-},
-
-{
-
-Key: "password",
-
-IsOptional: false,
-
-Validators: []validator.Validator{
-
-validator.CreateValidator(validator.IsNotEmpty, "Password is required"),
-
-validator.CreateValidator(validator.MinLength(6), "Password must be at least 6 characters"),
-
-},
-
-},
+	{
+	
+	Key: "email",
+	
+	IsOptional: false,
+	
+	Validators: []validator.Validator{
+	
+	validator.CreateValidator(validator.IsNotEmpty, "Email is required"),
+	
+	validator.CreateValidator(validator.IsEmail, "Invalid email address"),
+	
+	},
+	
+		},
+	
+	{
+	
+	Key: "password",
+	
+	IsOptional: false,
+	
+	Validators: []validator.Validator{
+	
+	validator.CreateValidator(validator.IsNotEmpty, "Password is required"),
+	
+	validator.CreateValidator(validator.MinLength(6), "Password must be at least 6 characters"),
+	
+		},
+	
+	},
 
 }
 
