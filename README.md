@@ -66,7 +66,6 @@ func main() {
             },
         
         },
-
         {
         
             Key: "email",
