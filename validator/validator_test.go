@@ -4,31 +4,51 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // TestIsNotEmpty tests the IsNotEmpty validator.
 func TestIsNotEmpty(t *testing.T) {
 	tests := []struct {
-		name  string
-		input interface{}
-		error error
+		name     string
+		value    interface{}
+		expected error
 	}{
-		{"nil value", nil, errors.New("value is nil")},
-		{"empty string", "", errors.New("value is empty")},
-		{"non-empty string", "test", nil},
-		{"empty slice", []string{}, errors.New("value is empty")},
-		{"non-empty slice", []string{"item"}, nil},
-		{"zero integer", 0, errors.New("value is zero")},
-		{"non-zero integer", 42, nil},
-		{"false boolean", false, errors.New("value is false")},
-		{"true boolean", true, nil},
+		// Strings
+		{name: "Non-empty string", value: "hello", expected: nil},
+		{name: "Empty string", value: "", expected: errors.New("value is empty")},
+
+		// Numbers
+		{name: "Non-zero int", value: 42, expected: nil},
+		{name: "Zero int", value: 0, expected: errors.New("value is zero")},
+		{name: "Non-zero float", value: 3.14, expected: nil},
+		{name: "Zero float", value: 0.0, expected: errors.New("value is zero")},
+
+		// Booleans
+		{name: "True boolean", value: true, expected: nil},
+		{name: "False boolean", value: false, expected: errors.New("value is false")},
+
+		// Slices
+		{name: "Non-empty slice", value: []int{1, 2, 3}, expected: nil},
+		{name: "Empty slice", value: []int{}, expected: errors.New("value is empty")},
+
+		// Maps
+		{name: "Non-empty map", value: map[string]int{"a": 1}, expected: nil},
+		{name: "Empty map", value: map[string]int{}, expected: errors.New("value is empty")},
+
+		// Nil
+		{name: "Nil value", value: nil, expected: errors.New("value is nil")},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			err := IsNotEmpty(test.input)
-			require.Equal(t, test.error, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := IsNotEmpty(tt.value)
+			if tt.expected == nil {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tt.expected.Error())
+			}
 		})
 	}
 }
@@ -205,6 +225,153 @@ func TestValidate(t *testing.T) {
 				"password": "pass",
 			},
 			errors.New("Password must be at least 6 characters"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := Validate(test.input, options)
+			require.Equal(t, test.error, err)
+		})
+	}
+}
+
+func TestNestedValidation(t *testing.T) {
+	options := []ValidationOption{
+		{
+			Key: "user",
+			Validators: []Validator{
+				CreateValidator(IsNotEmpty, "User is required"),
+			},
+			Nested: []ValidationOption{
+				{
+					Key: "name",
+					Validators: []Validator{
+						CreateValidator(IsNotEmpty, "Name is required"),
+					},
+				},
+				{
+					Key: "age",
+					Validators: []Validator{
+						CreateValidator(IsNotEmpty, "age is required"),
+						CreateValidator(func(value interface{}) error {
+							age, ok := value.(float64)
+							if !ok {
+								return errors.New("age must be a number")
+							}
+							if age < 0 {
+								return errors.New("age must be positive")
+							}
+							return errors.New("Invalid age")
+						}, "Invalid age"),
+					},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name  string
+		input map[string]interface{}
+		error error
+	}{
+		{
+			"valid nested input",
+			map[string]interface{}{
+				"user": map[string]interface{}{
+					"name": "John Doe",
+					"age":  30,
+				},
+			},
+			errors.New("Invalid age"),
+		},
+		{
+			"missing nested field",
+			map[string]interface{}{
+				"user": map[string]interface{}{
+					"name": "John Doe",
+				},
+			},
+			errors.New("age is required"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := Validate(test.input, options)
+			require.Equal(t, test.error, err)
+		})
+	}
+}
+
+func TestCustomValidator(t *testing.T) {
+	customValidator := CreateValidator(func(value interface{}) error {
+		str, ok := value.(string)
+		if !ok {
+			return errors.New("value must be a string")
+		}
+		if str != "expected" {
+			return errors.New("Value must be 'expected'")
+		}
+		return nil
+	}, "Value must be 'expected'")
+
+	tests := []struct {
+		name  string
+		input interface{}
+		error error
+	}{
+		{"valid input", "expected", nil},
+		{"invalid input", "unexpected", errors.New("Value must be 'expected'")},
+		{"wrong type", 123, errors.New("value must be a string")},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := customValidator.Func(test.input)
+			require.Equal(t, test.error, err)
+		})
+	}
+}
+
+func TestIntegration(t *testing.T) {
+	options := []ValidationOption{
+		{
+			Key: "username",
+			Validators: []Validator{
+				CreateValidator(IsNotEmpty, "Username is required"),
+				CreateValidator(IsAlphanumeric, "Username must be alphanumeric"),
+			},
+		},
+		{
+			Key: "email",
+			Validators: []Validator{
+				CreateValidator(IsNotEmpty, "Email is required"),
+				CreateValidator(IsEmail, "Invalid email address"),
+			},
+		},
+	}
+
+	tests := []struct {
+		name  string
+		input map[string]interface{}
+		error error
+	}{
+		{
+			"valid input",
+			map[string]interface{}{
+				"username": "user123",
+				"email":    "user@example.com",
+			},
+			nil,
+		},
+		{
+			"invalid username",
+			map[string]interface{}{
+				"username": "user@123",
+				"email":    "user@example.com",
+			},
+			errors.New("Username must be alphanumeric"),
 		},
 	}
 
