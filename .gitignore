@@ -1,0 +1,51 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of `go build`
+bin/
+dist/
+
+# Output of `go test`
+coverage.txt
+profile.cov
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# IDE-specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.local
+
+# Log files
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore the Go module cache
+# (This is optional, as the module cache is typically not included in the repository)
+# .mod/
+# .sum/
+
+# Ignore local development files
+local/
+tmp/
+*.env
+
+go.sum

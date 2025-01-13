@@ -1,11 +1,8 @@
-module github.com/kthehatter/go-validator/ginvalidator
+module github.com/kthehatter/go-validator
 
 go 1.23.4
 
-require (
-	github.com/gin-gonic/gin v1.10.0
-	github.com/kthehatter/go-validator/core v1.0.0
-)
+require github.com/gin-gonic/gin v1.10.0
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
@@ -35,5 +32,3 @@ require (
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/your-username/go-validator/core => ../core
