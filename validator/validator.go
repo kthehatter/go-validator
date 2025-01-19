@@ -5,6 +5,9 @@ import "fmt"
 // ValidatorFunc is a function that validates a field and returns an error if validation fails.
 type ValidatorFunc func(value interface{}) error
 
+// TransformerFunc is a function that transforms a value.
+type Transformer func(value interface{}) interface{}
+
 // Validator defines a validator function and its error message.
 type Validator struct {
 	Func    ValidatorFunc
@@ -13,10 +16,11 @@ type Validator struct {
 
 // ValidationOption defines the validation rules for a specific field.
 type ValidationOption struct {
-	Key        string             // Field name in the request body
-	IsOptional bool               // Whether the field is optional
-	Validators []Validator        // List of validators for the field
-	Nested     []ValidationOption // Validation options for nested objects
+	Key          string             // Field name in the request body
+	IsOptional   bool               // Whether the field is optional
+	Validators   []Validator        // List of validators for the field
+	Transformers []Transformer      // List of transformers for the field
+	Nested       []ValidationOption // Validation options for nested objects
 }
 
 // Validate checks the request body against the validation options and returns the first error.
@@ -27,6 +31,14 @@ func Validate(body map[string]interface{}, options []ValidationOption) error {
 		// Skip validation if the field is optional and not present
 		if option.IsOptional && !exists {
 			continue
+		}
+
+		// Apply transformations
+		if exists {
+			for _, transformer := range option.Transformers {
+				value = transformer(value)
+			}
+			body[option.Key] = value // Update the body with the transformed value
 		}
 
 		// Run all validators for the field (if it exists)
