@@ -8,6 +8,30 @@ import (
 	"golang.org/x/text/language"
 )
 
+// ToLower transforms a string to lowercase.
+func ToLower(value interface{}) interface{} {
+	if str, ok := value.(string); ok {
+		return strings.ToLower(str)
+	}
+	return value
+}
+
+// ToUpper transforms a string to uppercase.
+func ToUpper(value interface{}) interface{} {
+	if str, ok := value.(string); ok {
+		return strings.ToUpper(str)
+	}
+	return value
+}
+
+// TrimSpace trims leading and trailing whitespace from a string.
+func Trim(value interface{}) interface{} {
+	if str, ok := value.(string); ok {
+		return strings.TrimSpace(str)
+	}
+	return value
+}
+
 // RemoveSpecialChars removes special characters from a string.
 func RemoveSpecialChars(value interface{}) interface{} {
 	if str, ok := value.(string); ok {

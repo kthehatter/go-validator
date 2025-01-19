@@ -4,6 +4,69 @@ import (
 	"testing"
 )
 
+func TestToLower(t *testing.T) {
+	tests := []struct {
+		input    interface{}
+		expected interface{}
+	}{
+		{"Hello World", "hello world"}, // Lowercase conversion
+		{"HELLO WORLD", "hello world"}, // Lowercase conversion
+		{"123ABC", "123abc"},           // Mixed alphanumeric
+		{"", ""},                       // Empty string
+		{123, 123},                     // Non-string input
+		{nil, nil},                     // Nil input
+	}
+
+	for _, test := range tests {
+		result := ToLower(test.input)
+		if result != test.expected {
+			t.Errorf("ToLower(%v) = %v, expected %v", test.input, result, test.expected)
+		}
+	}
+}
+
+func TestToUpper(t *testing.T) {
+	tests := []struct {
+		input    interface{}
+		expected interface{}
+	}{
+		{"Hello World", "HELLO WORLD"}, // Uppercase conversion
+		{"hello world", "HELLO WORLD"}, // Uppercase conversion
+		{"123abc", "123ABC"},           // Mixed alphanumeric
+		{"", ""},                       // Empty string
+		{123, 123},                     // Non-string input
+		{nil, nil},                     // Nil input
+	}
+
+	for _, test := range tests {
+		result := ToUpper(test.input)
+		if result != test.expected {
+			t.Errorf("ToUpper(%v) = %v, expected %v", test.input, result, test.expected)
+		}
+	}
+}
+
+func TestTrim(t *testing.T) {
+	tests := []struct {
+		input    interface{}
+		expected interface{}
+	}{
+		{"  Hello World  ", "Hello World"}, // Trim leading and trailing spaces
+		{"\tHello World\n", "Hello World"}, // Trim tabs and newlines
+		{"Hello World", "Hello World"},     // No trimming needed
+		{"", ""},                           // Empty string
+		{123, 123},                         // Non-string input
+		{nil, nil},                         // Nil input
+	}
+
+	for _, test := range tests {
+		result := Trim(test.input)
+		if result != test.expected {
+			t.Errorf("Trim(%v) = %v, expected %v", test.input, result, test.expected)
+		}
+	}
+}
+
 func TestRemoveSpecialChars(t *testing.T) {
 	tests := []struct {
 		input    interface{}
