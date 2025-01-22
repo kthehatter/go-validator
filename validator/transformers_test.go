@@ -96,6 +96,7 @@ func TestToTitleCase(t *testing.T) {
 		{"hello, world!", "Hello, World!"}, // Handles punctuation correctly
 		{"123", "123"},                     // Non-alphabetic input
 		{123, 123},                         // Non-string input
+		{"السلام عليكم", "السلام عليكم"}, // Arabic input
 	}
 
 	for _, test := range tests {
@@ -179,5 +180,100 @@ func TestReplace(t *testing.T) {
 		if result != test.expected {
 			t.Errorf("Replace(%v) = %v, expected %v", test.input, result, test.expected)
 		}
+	}
+}
+
+func TestValidationWithTransformations(t *testing.T) {
+	// Define validation rules with transformations
+	rules := []ValidationOption{
+		{
+			Key:        "username",
+			IsOptional: false,
+			Transformers: []Transformer{
+				Trim,
+				ToLower,
+			},
+			Validators: []Validator{
+				CreateValidator(IsNotEmpty, "username is required"),
+				CreateValidator(MinLength(3), "username must be at least 3 characters long"),
+			},
+		},
+		{
+			Key:        "email",
+			IsOptional: false,
+			Transformers: []Transformer{
+				Trim,
+				ToLower,
+			},
+			Validators: []Validator{
+				CreateValidator(IsEmail, "invalid email address"),
+			},
+		},
+	}
+
+	// Test cases
+	tests := []struct {
+		name        string
+		input       map[string]interface{}
+		expectedErr string
+	}{
+		{
+			name: "Valid input",
+			input: map[string]interface{}{
+				"username": "  JohnDoe  ",
+				"email":    "  JOHN@EXAMPLE.COM  ",
+			},
+			expectedErr: "", // No error expected
+		},
+		{
+			name: "Username too short",
+			input: map[string]interface{}{
+				"username": "  Jo  ", // After trimming and lowercasing: "jo" (length 2)
+				"email":    "john@example.com",
+			},
+			expectedErr: "username must be at least 3 characters long",
+		},
+		{
+			name: "Empty username",
+			input: map[string]interface{}{
+				"username": "  ", // After trimming: "" (empty)
+				"email":    "john@example.com",
+			},
+			expectedErr: "username is required",
+		},
+		{
+			name: "Invalid email",
+			input: map[string]interface{}{
+				"username": "johndoe",
+				"email":    "invalid-email", // Invalid email format
+			},
+			expectedErr: "invalid email address",
+		},
+		{
+			name: "Missing required field",
+			input: map[string]interface{}{
+				"email": "john@example.com", // Missing "username"
+			},
+			expectedErr: "username is required",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := Validate(test.input, rules)
+			if test.expectedErr == "" {
+				// No error expected
+				if err != nil {
+					t.Errorf("Expected no error, got: %v", err)
+				}
+			} else {
+				// Error expected
+				if err == nil {
+					t.Errorf("Expected error: %v, got nil", test.expectedErr)
+				} else if err.Error() != test.expectedErr {
+					t.Errorf("Expected error: %v, got: %v", test.expectedErr, err.Error())
+				}
+			}
+		})
 	}
 }

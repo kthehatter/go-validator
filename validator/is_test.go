@@ -496,3 +496,43 @@ func TestIsAlphaArabic(t *testing.T) {
 		})
 	}
 }
+func TestIsBase64Image(t *testing.T) {
+	tests := []struct {
+		name  string
+		input interface{}
+		error error
+	}{
+		{
+			name:  "valid Base64 image",
+			input: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==",
+			error: nil,
+		},
+		{
+			name:  "invalid Base64 image",
+			input: "data:image/png;base64,invalid",
+			error: errors.New("value is not valid Base64 image"),
+		},
+		{
+			name:  "invalid type (int)",
+			input: 123,
+			error: errors.New("value must be a string"),
+		},
+		{
+			name:  "invalid base64 image format (missing prefix)",
+			input: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/1h1ZAAAAABJRU5ErkJggg==",
+			error: errors.New("invalid base64 image format: must start with 'data:image/'"),
+		},
+		{
+			name:  "unsupported image format",
+			input: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg==",
+			error: errors.New("invalid image format"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := IsBase64Image(test.input)
+			require.Equal(t, test.error, err)
+		})
+	}
+}
