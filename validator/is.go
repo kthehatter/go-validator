@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net"
+	"net/http"
 	"net/mail"
 	"net/url"
 	"reflect"
@@ -358,4 +360,50 @@ func IsBase64(value interface{}) error {
 		return errors.New("value is not valid Base64")
 	}
 	return nil
+}
+
+// IsBase64Image checks if a string is valid Base64-encoded image data.
+func IsBase64Image(value interface{}) error {
+	// Ensure the input is a string
+	str, ok := value.(string)
+	if !ok {
+		return errors.New("value must be a string")
+	}
+
+	// Check if the string is a valid base64-encoded image
+	if !strings.HasPrefix(str, "data:image/") {
+		return errors.New("invalid base64 image format: must start with 'data:image/'")
+	}
+
+	// Extract the base64 data (remove the prefix)
+	base64Data := strings.SplitN(str, ",", 2)
+	if len(base64Data) != 2 {
+		return errors.New("invalid base64 image format: missing data prefix")
+	}
+
+	// Decode the base64 string
+	decodedData, err := base64.StdEncoding.DecodeString(base64Data[1])
+	if err != nil {
+		return errors.New("value is not valid Base64 image")
+	}
+
+	// Debug: Print the decoded data length
+	log.Printf("Decoded data length: %d bytes\n", len(decodedData))
+
+	// Detect the MIME type
+	mimeType := http.DetectContentType(decodedData)
+
+	// Check if the MIME type is a valid image type
+	validImageTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/png":  true,
+		"image/gif":  true,
+		"image/bmp":  true,
+		"image/webp": true,
+	}
+
+	if validImageTypes[mimeType] {
+		return nil
+	}
+	return errors.New("invalid image format")
 }
