@@ -109,12 +109,15 @@ func IsNotIn(disallowedValues ...interface{}) ValidatorFunc {
 func IsInArray(array interface{}) ValidatorFunc {
 	return func(value interface{}) error {
 		arr := reflect.ValueOf(array)
+		if arr.Kind() != reflect.Slice && arr.Kind() != reflect.Array {
+			return fmt.Errorf("expected an array or slice, got %T", array)
+		}
 		for i := 0; i < arr.Len(); i++ {
 			if arr.Index(i).Interface() == value {
 				return nil
 			}
 		}
-		return fmt.Errorf("value is not in the array")
+		return fmt.Errorf("value must be one of %v", array)
 	}
 }
 
@@ -122,9 +125,12 @@ func IsInArray(array interface{}) ValidatorFunc {
 func IsNotInArray(array interface{}) ValidatorFunc {
 	return func(value interface{}) error {
 		arr := reflect.ValueOf(array)
+		if arr.Kind() != reflect.Slice && arr.Kind() != reflect.Array {
+			return fmt.Errorf("expected an array or slice, got %T", array)
+		}
 		for i := 0; i < arr.Len(); i++ {
 			if arr.Index(i).Interface() == value {
-				return fmt.Errorf("value is in the array")
+				return fmt.Errorf("value must not be one of %v", array)
 			}
 		}
 		return nil

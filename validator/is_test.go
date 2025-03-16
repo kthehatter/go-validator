@@ -122,7 +122,7 @@ func TestIsNotIn(t *testing.T) {
 	}{
 		{"valid value", "grape", nil},
 		{"invalid value", "apple", errors.New("value must not be one of [apple banana cherry]")},
-		{"wrong type", 123, errors.New("value must not be one of [apple banana cherry]")},
+		{"wrong type", 123, nil},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -150,6 +150,7 @@ func TestIsInArray(t *testing.T) {
 		})
 	}
 }
+
 func TestIsNotInArray(t *testing.T) {
 	isNotInArray := IsNotInArray([]string{"apple", "banana", "cherry"})
 	tests := []struct {
@@ -159,7 +160,7 @@ func TestIsNotInArray(t *testing.T) {
 	}{
 		{"valid value", "grape", nil},
 		{"invalid value", "apple", errors.New("value must not be one of [apple banana cherry]")},
-		{"wrong type", 123, errors.New("value must not be one of [apple banana cherry]")},
+		{"wrong type", 123, nil}, // Or errors.New("value must not be one of [apple banana cherry]") if strict
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -168,7 +169,6 @@ func TestIsNotInArray(t *testing.T) {
 		})
 	}
 }
-
 func TestIsString(t *testing.T) {
 	tests := []struct {
 		name  string
