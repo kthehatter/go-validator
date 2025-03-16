@@ -84,8 +84,12 @@ func IsEmail(value interface{}) error {
 // IsIn checks if a value is in a predefined list of allowed values.
 func IsIn(allowedValues ...interface{}) ValidatorFunc {
 	return func(value interface{}) error {
+		// check if the value is nil
+		if value == nil {
+			return errors.New("value is nil")
+		}
 		for _, allowed := range allowedValues {
-			if value == allowed {
+			if reflect.DeepEqual(value, allowed) {
 				return nil
 			}
 		}
@@ -96,8 +100,12 @@ func IsIn(allowedValues ...interface{}) ValidatorFunc {
 // IsNotIn checks if a value is not in a predefined list of disallowed values.
 func IsNotIn(disallowedValues ...interface{}) ValidatorFunc {
 	return func(value interface{}) error {
+		// check if the value is nil
+		if value == nil {
+			return errors.New("value is nil")
+		}
 		for _, disallowed := range disallowedValues {
-			if value == disallowed {
+			if reflect.DeepEqual(value, disallowed) {
 				return fmt.Errorf("value must not be one of %v", disallowedValues)
 			}
 		}
@@ -108,12 +116,16 @@ func IsNotIn(disallowedValues ...interface{}) ValidatorFunc {
 // IsInArray checks if a value is in an array.
 func IsInArray(array interface{}) ValidatorFunc {
 	return func(value interface{}) error {
+		// check if the value is nil
+		if value == nil {
+			return errors.New("value is nil")
+		}
 		arr := reflect.ValueOf(array)
 		if arr.Kind() != reflect.Slice && arr.Kind() != reflect.Array {
 			return fmt.Errorf("expected an array or slice, got %T", array)
 		}
 		for i := 0; i < arr.Len(); i++ {
-			if arr.Index(i).Interface() == value {
+			if reflect.DeepEqual(value, arr.Index(i).Interface()) {
 				return nil
 			}
 		}
@@ -124,12 +136,16 @@ func IsInArray(array interface{}) ValidatorFunc {
 // IsNotInArray checks if a value is not in an array.
 func IsNotInArray(array interface{}) ValidatorFunc {
 	return func(value interface{}) error {
+		// check if the value is nil
+		if value == nil {
+			return errors.New("value is nil")
+		}
 		arr := reflect.ValueOf(array)
 		if arr.Kind() != reflect.Slice && arr.Kind() != reflect.Array {
 			return fmt.Errorf("expected an array or slice, got %T", array)
 		}
 		for i := 0; i < arr.Len(); i++ {
-			if arr.Index(i).Interface() == value {
+			if reflect.DeepEqual(value, arr.Index(i).Interface()) {
 				return fmt.Errorf("value must not be one of %v", array)
 			}
 		}

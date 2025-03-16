@@ -121,6 +121,7 @@ func TestIsNotIn(t *testing.T) {
 		error error
 	}{
 		{"valid value", "grape", nil},
+		{"invalid value", nil, errors.New("value is nil")},
 		{"invalid value", "apple", errors.New("value must not be one of [apple banana cherry]")},
 		{"wrong type", 123, nil},
 	}
@@ -140,6 +141,7 @@ func TestIsInArray(t *testing.T) {
 		error error
 	}{
 		{"valid value", "apple", nil},
+		{"invalid value", nil, errors.New("value is nil")},
 		{"invalid value", "grape", errors.New("value must be one of [apple banana cherry]")},
 		{"wrong type", 123, errors.New("value must be one of [apple banana cherry]")},
 	}
@@ -159,8 +161,9 @@ func TestIsNotInArray(t *testing.T) {
 		error error
 	}{
 		{"valid value", "grape", nil},
+		{"invalid value", nil, errors.New("value is nil")},
 		{"invalid value", "apple", errors.New("value must not be one of [apple banana cherry]")},
-		{"wrong type", 123, nil}, // Or errors.New("value must not be one of [apple banana cherry]") if strict
+		{"wrong type", 123, nil},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
