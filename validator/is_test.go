@@ -113,7 +113,65 @@ func TestIsIn(t *testing.T) {
 		})
 	}
 }
+func TestIsNotIn(t *testing.T) {
+	isNotIn := IsNotIn("apple", "banana", "cherry")
+	tests := []struct {
+		name  string
+		input interface{}
+		error error
+	}{
+		{"valid value", "grape", nil},
+		{"invalid value", nil, errors.New("value is nil")},
+		{"invalid value", "apple", errors.New("value must not be one of [apple banana cherry]")},
+		{"wrong type", 123, nil},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := isNotIn(test.input)
+			require.Equal(t, test.error, err)
+		})
+	}
+}
 
+func TestIsInArray(t *testing.T) {
+	isInArray := IsInArray([]string{"apple", "banana", "cherry"})
+	tests := []struct {
+		name  string
+		input interface{}
+		error error
+	}{
+		{"valid value", "apple", nil},
+		{"invalid value", nil, errors.New("value is nil")},
+		{"invalid value", "grape", errors.New("value must be one of [apple banana cherry]")},
+		{"wrong type", 123, errors.New("value must be one of [apple banana cherry]")},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := isInArray(test.input)
+			require.Equal(t, test.error, err)
+		})
+	}
+}
+
+func TestIsNotInArray(t *testing.T) {
+	isNotInArray := IsNotInArray([]string{"apple", "banana", "cherry"})
+	tests := []struct {
+		name  string
+		input interface{}
+		error error
+	}{
+		{"valid value", "grape", nil},
+		{"invalid value", nil, errors.New("value is nil")},
+		{"invalid value", "apple", errors.New("value must not be one of [apple banana cherry]")},
+		{"wrong type", 123, nil},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := isNotInArray(test.input)
+			require.Equal(t, test.error, err)
+		})
+	}
+}
 func TestIsString(t *testing.T) {
 	tests := []struct {
 		name  string
