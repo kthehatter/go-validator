@@ -109,3 +109,34 @@ func Each(validatorFunc ValidatorFunc) ValidatorFunc {
 		return nil
 	}
 }
+
+// EachWithOptions applies a set of validation options to each element in a slice or array, returning the first error
+func EachWithOptions(options []ValidationOption) ValidatorFunc {
+	return func(value interface{}) error {
+		if value == nil {
+			return fmt.Errorf("value must be a non-nil slice or array")
+		}
+		v := reflect.ValueOf(value)
+		if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+			return fmt.Errorf("value must be a slice or array, got %T", value)
+		}
+		if v.Len() == 0 {
+			return nil
+		}
+		for i := 0; i < v.Len(); i++ {
+			elem := v.Index(i).Interface()
+			nestedBody, ok := elem.(map[string]interface{})
+			if !ok {
+				if reflect.TypeOf(elem).Kind() == reflect.Struct {
+					nestedBody = StructToMap(elem)
+				} else {
+					return fmt.Errorf("element at index %d must be an object, got %T", i, elem)
+				}
+			}
+			if err := Validate(nestedBody, options); err != nil {
+				return fmt.Errorf("element at index %d: %v", i, err)
+			}
+		}
+		return nil
+	}
+}
