@@ -93,6 +93,44 @@ func IsIn(allowedValues ...interface{}) ValidatorFunc {
 	}
 }
 
+// IsNotIn checks if a value is not in a predefined list of disallowed values.
+func IsNotIn(disallowedValues ...interface{}) ValidatorFunc {
+	return func(value interface{}) error {
+		for _, disallowed := range disallowedValues {
+			if value == disallowed {
+				return fmt.Errorf("value must not be one of %v", disallowedValues)
+			}
+		}
+		return nil
+	}
+}
+
+// IsInArray checks if a value is in an array.
+func IsInArray(array interface{}) ValidatorFunc {
+	return func(value interface{}) error {
+		arr := reflect.ValueOf(array)
+		for i := 0; i < arr.Len(); i++ {
+			if arr.Index(i).Interface() == value {
+				return nil
+			}
+		}
+		return fmt.Errorf("value is not in the array")
+	}
+}
+
+// IsNotInArray checks if a value is not in an array.
+func IsNotInArray(array interface{}) ValidatorFunc {
+	return func(value interface{}) error {
+		arr := reflect.ValueOf(array)
+		for i := 0; i < arr.Len(); i++ {
+			if arr.Index(i).Interface() == value {
+				return fmt.Errorf("value is in the array")
+			}
+		}
+		return nil
+	}
+}
+
 // IsString checks if a value is a string.
 func IsString(value interface{}) error {
 	if reflect.TypeOf(value).Kind() != reflect.String {

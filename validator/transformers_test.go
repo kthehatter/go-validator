@@ -171,6 +171,7 @@ func TestReplace(t *testing.T) {
 		expected interface{}
 	}{
 		{"foo bar", "bar bar"},
+		{"foo bar foo", "bar bar bar"},
 		{"hello world", "hello world"},
 		{123, 123}, // Non-string input
 	}
