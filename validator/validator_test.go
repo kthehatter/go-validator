@@ -78,7 +78,7 @@ func TestValidate(t *testing.T) {
 				"username": "user123",
 				"password": "password123",
 			},
-			errors.New("Email is required"),
+			errors.New("email is required"),
 		},
 		{
 			"invalid email",
