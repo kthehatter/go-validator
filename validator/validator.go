@@ -1,6 +1,10 @@
 package validator
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+	"strings"
+)
 
 // ValidatorFunc is a function that validates a field and returns an error if validation fails.
 type ValidatorFunc func(value interface{}) error
@@ -31,6 +35,11 @@ func Validate(body map[string]interface{}, options []ValidationOption) error {
 		// Skip validation if the field is optional and not present
 		if option.IsOptional && !exists {
 			continue
+		}
+
+		// Check if the field is required but missing *before* running validators
+		if !option.IsOptional && !exists {
+			return fmt.Errorf("%s is required", option.Key)
 		}
 
 		// Apply transformations
@@ -74,4 +83,29 @@ func CreateValidator(fn ValidatorFunc, message string) Validator {
 		Func:    fn,
 		Message: message,
 	}
+}
+
+// StructToMap converts a struct to a map[string]interface{} for validation
+func StructToMap(obj interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	v := reflect.ValueOf(obj)
+	t := reflect.TypeOf(obj)
+
+	for i := range v.NumField() {
+		field := t.Field(i)
+		// Use the json tag if present, otherwise fall back to field name
+		jsonTag := field.Tag.Get("json")
+		key := field.Name
+		if jsonTag != "" {
+			// Split on "," to handle options like "omitempty"
+			if parts := strings.Split(jsonTag, ","); len(parts) > 0 {
+				key = parts[0]
+			}
+		}
+		// Only process exported fields
+		if field.PkgPath == "" { // PkgPath is empty for exported fields
+			result[key] = v.Field(i).Interface()
+		}
+	}
+	return result
 }
