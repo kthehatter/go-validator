@@ -53,6 +53,9 @@ func Validate(body map[string]interface{}, options []ValidationOption) error {
 		// Run all validators for the field (if it exists)
 		for _, validator := range option.Validators {
 			if err := validator.Func(value); err != nil {
+				if validator.Message == "" {
+					return err
+				}
 				return fmt.Errorf("%s", validator.Message)
 			}
 		}
