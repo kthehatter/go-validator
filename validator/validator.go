@@ -27,7 +27,10 @@ type ValidationOption struct {
 	Nested       []ValidationOption // Validation options for nested objects
 }
 
-// Validate checks the request body against the validation options and returns the first error.
+// Validate validates the request body based on the provided validation options.
+// It applies any transformers to update field values, enforces required fields,
+// and executes associated validators, returning the first error encountered.
+// For fields with nested validation options, it recursively validates the sub-objects.
 func Validate(body map[string]interface{}, options []ValidationOption) error {
 	for _, option := range options {
 		value, exists := body[option.Key]
