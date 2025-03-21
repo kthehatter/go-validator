@@ -255,3 +255,220 @@ func TestEachWithOptions(t *testing.T) {
 		})
 	}
 }
+
+var ProductVariantsValidationOptions = []ValidationOption{
+	{
+		Key:        "options",
+		IsOptional: true,
+		Validators: []Validator{
+			CreateValidator(EachWithOptions([]ValidationOption{
+				{
+					Key:        "name",
+					IsOptional: false,
+					Transformers: []Transformer{
+						ToLower,
+					},
+					Validators: []Validator{
+						CreateValidator(IsNotEmpty, "Variant option name is required"),
+						CreateValidator(MaxLength(150), "Variant option name must be less than 150 characters"),
+					},
+				},
+				{
+					Key:        "values",
+					IsOptional: false,
+					Validators: []Validator{
+						CreateValidator(MinLength(1), "At least one option value is required"),
+						CreateValidator(Each(MaxLength(150)), "Each option value must be less than 150 characters"),
+					},
+				},
+			}), ""),
+		},
+	},
+	{
+		Key:        "values",
+		IsOptional: true,
+		Validators: []Validator{
+			CreateValidator(MinLength(1), "At least one variant value is required"),
+			CreateValidator(EachWithOptions([]ValidationOption{
+				{
+					Key:        "options",
+					IsOptional: false,
+					Validators: []Validator{
+						CreateValidator(MinLength(1), "At least one variant option is required"),
+						CreateValidator(EachWithOptions([]ValidationOption{
+							{
+								Key:        "name",
+								IsOptional: false,
+								Validators: []Validator{
+									CreateValidator(IsNotEmpty, "Variant option name is required"),
+									CreateValidator(MaxLength(150), "Variant option name must be less than 150 characters"),
+								},
+							},
+							{
+								Key:        "value",
+								IsOptional: false,
+								Validators: []Validator{
+									CreateValidator(IsNotEmpty, "Variant option value is required"),
+									CreateValidator(MaxLength(150), "Variant option value must be less than 150 characters"),
+								},
+							},
+						}), ""),
+					},
+				},
+				{
+					Key:        "sku",
+					IsOptional: false,
+					Validators: []Validator{
+						CreateValidator(IsNotEmpty, "SKU is required"),
+						CreateValidator(MinLength(1), "SKU must be at least 1 character"),
+						CreateValidator(MaxLength(50), "SKU must be less than 50 characters"),
+					},
+				},
+				{
+					Key:        "reference",
+					IsOptional: true,
+					Validators: []Validator{
+						CreateValidator(MaxLength(150), "Reference must be less than 150 characters"),
+					},
+				},
+				{
+					Key:        "unitPrice",
+					IsOptional: false,
+					Validators: []Validator{
+						CreateValidator(IsFloat, "Unit price is required"),
+						CreateValidator(Min(0), "Unit price must be at least 0"),
+					},
+				},
+				{
+					Key:        "costPrice",
+					IsOptional: false,
+					Validators: []Validator{
+						CreateValidator(IsFloat, "Cost price is required"),
+						CreateValidator(Min(0), "Cost price must be at least 0"),
+					},
+				},
+				{
+					Key:        "image",
+					IsOptional: true,
+					Validators: []Validator{
+						CreateValidator(IsURL, "Image must be a valid URL"),
+					},
+				},
+				{
+					Key:        "quantityPricing",
+					IsOptional: true,
+					Validators: []Validator{
+						CreateValidator(EachWithOptions([]ValidationOption{
+							{
+								Key:        "minQuantity",
+								IsOptional: false,
+								Validators: []Validator{
+									CreateValidator(IsInt, "Min quantity must be an integer"),
+									CreateValidator(Min(1), "Min quantity must be at least 1"),
+								},
+							},
+							{
+								Key:        "price",
+								IsOptional: false,
+								Validators: []Validator{
+									CreateValidator(IsFloat, "Price is required"),
+									CreateValidator(Min(0), "Price must be at least 0"),
+								},
+							},
+						}), "Invalid quantity pricing"),
+					},
+				},
+			}), ""),
+		},
+	},
+}
+
+func TestProductVariantsValidationOptions(t *testing.T) {
+	// Define test cases
+	tests := []struct {
+		description string
+		input       map[string]interface{}
+		expectedErr string
+	}{
+		{
+			description: "should fail when name is empty",
+			input: map[string]interface{}{
+				"options": []map[string]interface{}{
+					{
+						"name":   "",
+						"values": []string{"small", "medium"},
+					},
+				},
+			},
+			expectedErr: "Variant option name is required",
+		},
+		{
+			description: "should fail when name exceeds 150 characters",
+			input: map[string]interface{}{
+				"options": []map[string]interface{}{
+					{
+						"name":   string(make([]byte, 151)), // 151 chars
+						"values": []string{"small", "medium"},
+					},
+				},
+			},
+			expectedErr: "Variant option name must be less than 150 characters",
+		},
+		{
+			description: "should fail when values is empty",
+			input: map[string]interface{}{
+				"options": []map[string]interface{}{
+					{
+						"name":   "size",
+						"values": []string{},
+					},
+				},
+			},
+			expectedErr: "At least one option value is required",
+		},
+		{
+			description: "should fail when a value exceeds 150 characters",
+			input: map[string]interface{}{
+				"options": []map[string]interface{}{
+					{
+						"name":   "size",
+						"values": []string{"small", string(make([]byte, 151))},
+					},
+				},
+			},
+			expectedErr: "Each option value must be less than 150 characters",
+		},
+		{
+			description: "should pass with valid input",
+			input: map[string]interface{}{
+				"options": []map[string]interface{}{
+					{
+						"name":   "size",
+						"values": []string{"small", "medium"},
+					},
+				},
+			},
+			expectedErr: "",
+		},
+	}
+
+	// Run tests
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			err := Validate(test.input, ProductVariantsValidationOptions)
+			if test.expectedErr == "" {
+				// Expect no error
+				if err != nil {
+					t.Errorf("expected no error, got: %v", err)
+				}
+			} else {
+				// Expect an error
+				if err == nil {
+					t.Errorf("expected error %q, got nil", test.expectedErr)
+				} else if err.Error() != test.expectedErr {
+					t.Errorf("expected error %q, got %q", test.expectedErr, err.Error())
+				}
+			}
+		})
+	}
+}
