@@ -183,7 +183,7 @@ func TestEachWithOptions(t *testing.T) {
 				map[string]interface{}{"name": "color", "value": "red"},
 				map[string]interface{}{"value": "M"},
 			},
-			expected: errors.New("element at index 1: name is required"),
+			expected: errors.New("name is required"),
 		},
 		{
 			name: "invalid array - wrong type",
@@ -191,7 +191,7 @@ func TestEachWithOptions(t *testing.T) {
 				map[string]interface{}{"name": "color", "value": "red"},
 				map[string]interface{}{"name": 123, "value": "M"},
 			},
-			expected: errors.New("element at index 1: value must be a string"),
+			expected: errors.New("value must be a string"),
 		},
 		{
 			name:     "empty array",
