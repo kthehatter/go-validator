@@ -6,29 +6,49 @@ import (
 	"reflect"
 )
 
-// MinLength checks if a string meets a minimum length requirement.
+// MinLength checks if a string, slice, or array meets a minimum length requirement.
 func MinLength(min int) ValidatorFunc {
 	return func(value interface{}) error {
-		str, ok := value.(string)
-		if !ok {
-			return errors.New("value is not a string")
+		if value == nil {
+			return errors.New("value is nil")
 		}
-		if len(str) < min {
-			return fmt.Errorf("value must be at least %d characters long", min)
+
+		v := reflect.ValueOf(value)
+		switch v.Kind() {
+		case reflect.String:
+			if v.Len() < min {
+				return fmt.Errorf("value must be at least %d characters long", min)
+			}
+		case reflect.Slice, reflect.Array:
+			if v.Len() < min {
+				return fmt.Errorf("value must have at least %d elements", min)
+			}
+		default:
+			return fmt.Errorf("value must be a string, slice, or array, got %T", value)
 		}
 		return nil
 	}
 }
 
-// MaxLength checks if a string meets a maximum length requirement.
+// MaxLength checks if a string, slice, or array meets a maximum length requirement.
 func MaxLength(max int) ValidatorFunc {
 	return func(value interface{}) error {
-		str, ok := value.(string)
-		if !ok {
-			return errors.New("value is not a string")
+		if value == nil {
+			return errors.New("value is nil")
 		}
-		if len(str) > max {
-			return fmt.Errorf("value must be at most %d characters long", max)
+
+		v := reflect.ValueOf(value)
+		switch v.Kind() {
+		case reflect.String:
+			if v.Len() > max {
+				return fmt.Errorf("value must be at most %d characters long", max)
+			}
+		case reflect.Slice, reflect.Array:
+			if v.Len() > max {
+				return fmt.Errorf("value must have at most %d elements", max)
+			}
+		default:
+			return fmt.Errorf("value must be a string, slice, or array, got %T", value)
 		}
 		return nil
 	}
@@ -134,7 +154,7 @@ func EachWithOptions(options []ValidationOption) ValidatorFunc {
 				}
 			}
 			if err := Validate(nestedBody, options); err != nil {
-				return fmt.Errorf("element at index %d: %v", i, err)
+				return err
 			}
 		}
 		return nil
