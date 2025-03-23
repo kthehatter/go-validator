@@ -16,7 +16,7 @@ func applyToArrayOrValue(value any, transform func(any) any) any {
 	if v.Kind() == reflect.Slice {
 		// Create a new slice to store transformed values
 		result := make([]any, v.Len())
-		for i := range v.Len() {
+		for i := 0; i < v.Len(); i++ {
 			result[i] = transform(v.Index(i).Interface())
 		}
 		return result
