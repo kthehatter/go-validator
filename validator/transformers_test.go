@@ -1,25 +1,29 @@
 package validator
 
 import (
+	"reflect"
 	"testing"
 )
 
 func TestToLower(t *testing.T) {
 	tests := []struct {
-		input    interface{}
-		expected interface{}
+		input    any
+		expected any
 	}{
-		{"Hello World", "hello world"}, // Lowercase conversion
-		{"HELLO WORLD", "hello world"}, // Lowercase conversion
+		{"Hello World", "hello world"}, // Single string
+		{"HELLO WORLD", "hello world"}, // Single string
 		{"123ABC", "123abc"},           // Mixed alphanumeric
 		{"", ""},                       // Empty string
 		{123, 123},                     // Non-string input
 		{nil, nil},                     // Nil input
+		{[]any{"Hello", "WORLD"}, []any{"hello", "world"}}, // Array of strings
+		{[]string{"ABC", "XYZ"}, []any{"abc", "xyz"}},      // Slice of strings
+		{[]any{"Hello", 123}, []any{"hello", 123}},         // Mixed array
 	}
 
 	for _, test := range tests {
 		result := ToLower(test.input)
-		if result != test.expected {
+		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("ToLower(%v) = %v, expected %v", test.input, result, test.expected)
 		}
 	}
@@ -27,20 +31,23 @@ func TestToLower(t *testing.T) {
 
 func TestToUpper(t *testing.T) {
 	tests := []struct {
-		input    interface{}
-		expected interface{}
+		input    any
+		expected any
 	}{
-		{"Hello World", "HELLO WORLD"}, // Uppercase conversion
-		{"hello world", "HELLO WORLD"}, // Uppercase conversion
+		{"Hello World", "HELLO WORLD"}, // Single string
+		{"hello world", "HELLO WORLD"}, // Single string
 		{"123abc", "123ABC"},           // Mixed alphanumeric
 		{"", ""},                       // Empty string
 		{123, 123},                     // Non-string input
 		{nil, nil},                     // Nil input
+		{[]any{"Hello", "world"}, []any{"HELLO", "WORLD"}}, // Array of strings
+		{[]string{"abc", "xyz"}, []any{"ABC", "XYZ"}},      // Slice of strings
+		{[]any{"hello", 456}, []any{"HELLO", 456}},         // Mixed array
 	}
 
 	for _, test := range tests {
 		result := ToUpper(test.input)
-		if result != test.expected {
+		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("ToUpper(%v) = %v, expected %v", test.input, result, test.expected)
 		}
 	}
@@ -48,20 +55,22 @@ func TestToUpper(t *testing.T) {
 
 func TestTrim(t *testing.T) {
 	tests := []struct {
-		input    interface{}
-		expected interface{}
+		input    any
+		expected any
 	}{
-		{"  Hello World  ", "Hello World"}, // Trim leading and trailing spaces
-		{"\tHello World\n", "Hello World"}, // Trim tabs and newlines
-		{"Hello World", "Hello World"},     // No trimming needed
+		{"  Hello World  ", "Hello World"}, // Single string with spaces
+		{"\tHello World\n", "Hello World"}, // Single string with tabs/newlines
+		{"Hello World", "Hello World"},     // Single string no trimming needed
 		{"", ""},                           // Empty string
 		{123, 123},                         // Non-string input
 		{nil, nil},                         // Nil input
+		{[]any{"  Hello  ", "\tWorld\n"}, []any{"Hello", "World"}}, // Array of strings
+		{[]string{"  abc  ", " xyz "}, []any{"abc", "xyz"}},        // Slice of strings
 	}
 
 	for _, test := range tests {
 		result := Trim(test.input)
-		if result != test.expected {
+		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("Trim(%v) = %v, expected %v", test.input, result, test.expected)
 		}
 	}
@@ -69,17 +78,20 @@ func TestTrim(t *testing.T) {
 
 func TestRemoveSpecialChars(t *testing.T) {
 	tests := []struct {
-		input    interface{}
-		expected interface{}
+		input    any
+		expected any
 	}{
-		{"Hello!@# World!", "Hello World"},
-		{"123#456", "123456"},
-		{123, 123}, // Non-string input
+		{"Hello!@# World!", "Hello World"}, // Single string with special chars
+		{"123#456", "123456"},              // Single string with numbers
+		{"", ""},                           // Empty string
+		{123, 123},                         // Non-string input
+		{[]any{"Hello!@#", "World$%"}, []any{"Hello", "World"}}, // Array of strings
+		{[]string{"abc#@!", "123$%"}, []any{"abc", "123"}},      // Slice of strings
 	}
 
 	for _, test := range tests {
 		result := RemoveSpecialChars(test.input)
-		if result != test.expected {
+		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("RemoveSpecialChars(%v) = %v, expected %v", test.input, result, test.expected)
 		}
 	}
@@ -87,21 +99,22 @@ func TestRemoveSpecialChars(t *testing.T) {
 
 func TestToTitleCase(t *testing.T) {
 	tests := []struct {
-		input    interface{}
-		expected interface{}
+		input    any
+		expected any
 	}{
-		{"hello world", "Hello World"},
-		{"HELLO WORLD", "Hello World"},
-		{"çimant", "Çimant"},
-		{"hello, world!", "Hello, World!"}, // Handles punctuation correctly
-		{"123", "123"},                     // Non-alphabetic input
+		{"hello world", "Hello World"},     // Single string
+		{"HELLO WORLD", "Hello World"},     // Single string uppercase
+		{"çimant", "Çimant"},               // Single string with special chars
+		{"hello, world!", "Hello, World!"}, // Single string with punctuation
+		{"123", "123"},                     // Single string numeric
 		{123, 123},                         // Non-string input
-		{"السلام عليكم", "السلام عليكم"}, // Arabic input
+		{[]any{"hello world", "GOOD BYE"}, []any{"Hello World", "Good Bye"}}, // Array of strings
+		{[]string{"abc def", "xyz"}, []any{"Abc Def", "Xyz"}},                // Slice of strings
 	}
 
 	for _, test := range tests {
 		result := ToTitleCase(test.input)
-		if result != test.expected {
+		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("ToTitleCase(%v) = %v, expected %v", test.input, result, test.expected)
 		}
 	}
@@ -109,17 +122,20 @@ func TestToTitleCase(t *testing.T) {
 
 func TestToInt(t *testing.T) {
 	tests := []struct {
-		input    interface{}
-		expected interface{}
+		input    any
+		expected any
 	}{
-		{"123", 123},
-		{123.45, 123},
-		{"abc", "abc"}, // Invalid input
+		{"123", 123},                             // Single string
+		{123.45, 123},                            // Single float
+		{"abc", "abc"},                           // Invalid single string
+		{[]any{"123", "456"}, []any{123, 456}},   // Array of valid strings
+		{[]string{"789", "0"}, []any{789, 0}},    // Slice of valid strings
+		{[]any{"abc", "123"}, []any{"abc", 123}}, // Mixed array
 	}
 
 	for _, test := range tests {
 		result := ToInt(test.input)
-		if result != test.expected {
+		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("ToInt(%v) = %v, expected %v", test.input, result, test.expected)
 		}
 	}
@@ -127,17 +143,20 @@ func TestToInt(t *testing.T) {
 
 func TestToFloat(t *testing.T) {
 	tests := []struct {
-		input    interface{}
-		expected interface{}
+		input    any
+		expected any
 	}{
-		{"123.45", 123.45},
-		{123, 123.0},
-		{"abc", "abc"}, // Invalid input
+		{"123.45", 123.45}, // Single string
+		{123, 123.0},       // Single int
+		{"abc", "abc"},     // Invalid single string
+		{[]any{"123.45", "0"}, []any{123.45, 0.0}},    // Array of valid strings
+		{[]string{"789", "1.23"}, []any{789.0, 1.23}}, // Slice of valid strings
+		{[]any{"abc", "123"}, []any{"abc", 123.0}},    // Mixed array
 	}
 
 	for _, test := range tests {
 		result := ToFloat(test.input)
-		if result != test.expected {
+		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("ToFloat(%v) = %v, expected %v", test.input, result, test.expected)
 		}
 	}
@@ -145,19 +164,20 @@ func TestToFloat(t *testing.T) {
 
 func TestTruncate(t *testing.T) {
 	transformer := Truncate(5)
-
 	tests := []struct {
-		input    interface{}
-		expected interface{}
+		input    any
+		expected any
 	}{
-		{"hello world", "hello"},
-		{"hi", "hi"},
-		{123, 123}, // Non-string input
+		{"hello world", "hello"}, // Single string
+		{"hi", "hi"},             // Single string shorter than max
+		{123, 123},               // Non-string input
+		{[]any{"hello world", "abcdef"}, []any{"hello", "abcde"}}, // Array of strings
+		{[]string{"hi", "goodbye"}, []any{"hi", "goodb"}},         // Slice of strings
 	}
 
 	for _, test := range tests {
 		result := transformer(test.input)
-		if result != test.expected {
+		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("Truncate(%v) = %v, expected %v", test.input, result, test.expected)
 		}
 	}
@@ -165,20 +185,21 @@ func TestTruncate(t *testing.T) {
 
 func TestReplace(t *testing.T) {
 	transformer := Replace("foo", "bar")
-
 	tests := []struct {
-		input    interface{}
-		expected interface{}
+		input    any
+		expected any
 	}{
-		{"foo bar", "bar bar"},
-		{"foo bar foo", "bar bar bar"},
-		{"hello world", "hello world"},
-		{123, 123}, // Non-string input
+		{"foo bar", "bar bar"},                                    // Single string
+		{"foo bar foo", "bar bar bar"},                            // Single string multiple replacements
+		{"hello world", "hello world"},                            // Single string no replacement
+		{123, 123},                                                // Non-string input
+		{[]any{"foo", "foo bar"}, []any{"bar", "bar bar"}},        // Array of strings
+		{[]string{"hello foo", "foo"}, []any{"hello bar", "bar"}}, // Slice of strings
 	}
 
 	for _, test := range tests {
 		result := transformer(test.input)
-		if result != test.expected {
+		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("Replace(%v) = %v, expected %v", test.input, result, test.expected)
 		}
 	}
@@ -215,12 +236,12 @@ func TestValidationWithTransformations(t *testing.T) {
 	// Test cases
 	tests := []struct {
 		name        string
-		input       map[string]interface{}
+		input       map[string]any
 		expectedErr string
 	}{
 		{
 			name: "Valid input",
-			input: map[string]interface{}{
+			input: map[string]any{
 				"username": "  JohnDoe  ",
 				"email":    "  JOHN@EXAMPLE.COM  ",
 			},
@@ -228,7 +249,7 @@ func TestValidationWithTransformations(t *testing.T) {
 		},
 		{
 			name: "Username too short",
-			input: map[string]interface{}{
+			input: map[string]any{
 				"username": "  Jo  ", // After trimming and lowercasing: "jo" (length 2)
 				"email":    "john@example.com",
 			},
@@ -236,7 +257,7 @@ func TestValidationWithTransformations(t *testing.T) {
 		},
 		{
 			name: "Empty username",
-			input: map[string]interface{}{
+			input: map[string]any{
 				"username": "  ", // After trimming: "" (empty)
 				"email":    "john@example.com",
 			},
@@ -244,7 +265,7 @@ func TestValidationWithTransformations(t *testing.T) {
 		},
 		{
 			name: "Invalid email",
-			input: map[string]interface{}{
+			input: map[string]any{
 				"username": "johndoe",
 				"email":    "invalid-email", // Invalid email format
 			},
@@ -252,7 +273,7 @@ func TestValidationWithTransformations(t *testing.T) {
 		},
 		{
 			name: "Missing required field",
-			input: map[string]interface{}{
+			input: map[string]any{
 				"email": "john@example.com", // Missing "username"
 			},
 			expectedErr: "username is required",
