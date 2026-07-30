@@ -155,7 +155,7 @@ func IsNotInArray(array interface{}) ValidatorFunc {
 
 // IsString checks if a value is a string.
 func IsString(value interface{}) error {
-	if reflect.TypeOf(value).Kind() != reflect.String {
+	if reflect.ValueOf(value).Kind() != reflect.String {
 		return errors.New("value must be a string")
 	}
 	return nil
@@ -197,7 +197,7 @@ func IsFloat(value interface{}) error {
 
 // IsBool checks if a value is a boolean.
 func IsBool(value interface{}) error {
-	if reflect.TypeOf(value).Kind() != reflect.Bool {
+	if reflect.ValueOf(value).Kind() != reflect.Bool {
 		return errors.New("value must be a boolean")
 	}
 	return nil
@@ -205,7 +205,7 @@ func IsBool(value interface{}) error {
 
 // IsSlice checks if a value is a slice.
 func IsSlice(value interface{}) error {
-	if reflect.TypeOf(value).Kind() != reflect.Slice {
+	if reflect.ValueOf(value).Kind() != reflect.Slice {
 		return errors.New("value must be a slice")
 	}
 	return nil
@@ -213,7 +213,7 @@ func IsSlice(value interface{}) error {
 
 // IsMap checks if a value is a map.
 func IsMap(value interface{}) error {
-	if reflect.TypeOf(value).Kind() != reflect.Map {
+	if reflect.ValueOf(value).Kind() != reflect.Map {
 		return errors.New("value must be a map")
 	}
 	return nil
@@ -282,9 +282,17 @@ func IsCreditCard(value interface{}) error {
 	str = strings.ReplaceAll(str, " ", "")
 	str = strings.ReplaceAll(str, "-", "")
 
-	// Check if the string is a valid number
-	if _, err := strconv.Atoi(str); err != nil {
+	// Real card numbers are 12-19 digits. Validate each character is an
+	// ASCII digit rather than parsing the whole string with strconv.Atoi,
+	// which risks integer overflow on platforms with 32-bit int for
+	// numbers near the 19-digit upper bound.
+	if len(str) < 12 || len(str) > 19 {
 		return errors.New("value is not a valid credit card number")
+	}
+	for _, char := range str {
+		if char < '0' || char > '9' {
+			return errors.New("value is not a valid credit card number")
+		}
 	}
 
 	// Luhn algorithm
