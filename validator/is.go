@@ -282,12 +282,17 @@ func IsCreditCard(value interface{}) error {
 	str = strings.ReplaceAll(str, " ", "")
 	str = strings.ReplaceAll(str, "-", "")
 
-	// Check if the string is a valid number
-	if _, err := strconv.Atoi(str); err != nil {
-		return errors.New("value is not a valid credit card number")
-	}
+	// Real card numbers are 12-19 digits. Validate each character is an
+	// ASCII digit rather than parsing the whole string with strconv.Atoi,
+	// which risks integer overflow on platforms with 32-bit int for
+	// numbers near the 19-digit upper bound.
 	if len(str) < 12 || len(str) > 19 {
 		return errors.New("value is not a valid credit card number")
+	}
+	for _, char := range str {
+		if char < '0' || char > '9' {
+			return errors.New("value is not a valid credit card number")
+		}
 	}
 
 	// Luhn algorithm
