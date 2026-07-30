@@ -155,7 +155,7 @@ func IsNotInArray(array interface{}) ValidatorFunc {
 
 // IsString checks if a value is a string.
 func IsString(value interface{}) error {
-	if reflect.TypeOf(value).Kind() != reflect.String {
+	if reflect.ValueOf(value).Kind() != reflect.String {
 		return errors.New("value must be a string")
 	}
 	return nil
@@ -197,7 +197,7 @@ func IsFloat(value interface{}) error {
 
 // IsBool checks if a value is a boolean.
 func IsBool(value interface{}) error {
-	if reflect.TypeOf(value).Kind() != reflect.Bool {
+	if reflect.ValueOf(value).Kind() != reflect.Bool {
 		return errors.New("value must be a boolean")
 	}
 	return nil
@@ -205,7 +205,7 @@ func IsBool(value interface{}) error {
 
 // IsSlice checks if a value is a slice.
 func IsSlice(value interface{}) error {
-	if reflect.TypeOf(value).Kind() != reflect.Slice {
+	if reflect.ValueOf(value).Kind() != reflect.Slice {
 		return errors.New("value must be a slice")
 	}
 	return nil
@@ -213,7 +213,7 @@ func IsSlice(value interface{}) error {
 
 // IsMap checks if a value is a map.
 func IsMap(value interface{}) error {
-	if reflect.TypeOf(value).Kind() != reflect.Map {
+	if reflect.ValueOf(value).Kind() != reflect.Map {
 		return errors.New("value must be a map")
 	}
 	return nil
@@ -284,6 +284,9 @@ func IsCreditCard(value interface{}) error {
 
 	// Check if the string is a valid number
 	if _, err := strconv.Atoi(str); err != nil {
+		return errors.New("value is not a valid credit card number")
+	}
+	if len(str) < 12 || len(str) > 19 {
 		return errors.New("value is not a valid credit card number")
 	}
 
