@@ -363,6 +363,30 @@ func TestIsDate(t *testing.T) {
 	}
 }
 
+func TestIsISODate(t *testing.T) {
+	tests := []struct {
+		name  string
+		input interface{}
+		error error
+	}{
+		{"valid date only", "2023-10-01", nil},
+		{"valid RFC3339 with Z", "2023-10-01T15:04:05Z", nil},
+		{"valid RFC3339 with offset", "2023-10-01T15:04:05+02:00", nil},
+		{"valid RFC3339 with fractional seconds", "2023-10-01T15:04:05.123456789Z", nil},
+		{"valid datetime without timezone", "2023-10-01T15:04:05", nil},
+		{"invalid format", "01-10-2023", errors.New("value is not a valid ISO 8601 date or datetime")},
+		{"invalid day overflow", "2023-02-30", errors.New("value is not a valid ISO 8601 date or datetime")},
+		{"invalid type (int)", 123, errors.New("value must be a string")},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := IsISODate(test.input)
+			require.Equal(t, test.error, err)
+		})
+	}
+}
+
 func TestIsTime(t *testing.T) {
 	tests := []struct {
 		name  string

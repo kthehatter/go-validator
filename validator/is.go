@@ -316,6 +316,30 @@ func IsCreditCard(value interface{}) error {
 	return nil
 }
 
+var isoDateTimeLayouts = []string{
+	time.RFC3339,
+	time.RFC3339Nano,
+	"2006-01-02T15:04:05",
+}
+
+// IsISODate checks if a string is a valid ISO 8601 date or datetime,
+// e.g. "2023-10-01", "2023-10-01T15:04:05Z", or "2023-10-01T15:04:05+02:00".
+func IsISODate(value interface{}) error {
+	str, ok := value.(string)
+	if !ok {
+		return errors.New("value must be a string")
+	}
+	if _, err := time.Parse("2006-01-02", str); err == nil {
+		return nil
+	}
+	for _, layout := range isoDateTimeLayouts {
+		if _, err := time.Parse(layout, str); err == nil {
+			return nil
+		}
+	}
+	return errors.New("value is not a valid ISO 8601 date or datetime")
+}
+
 // IsHexColor checks if a string is a valid hexadecimal color code.
 func IsHexColor(value interface{}) error {
 	str, ok := value.(string)
