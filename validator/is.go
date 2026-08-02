@@ -68,7 +68,8 @@ func IsAlphanumeric(value interface{}) error {
 // Unlike IsNumber or IsInt, which check the Go type of the value, IsNumeric
 // checks the content of a string value — useful for things like postal
 // codes, PINs, or phone number digits where leading zeros must be preserved
-// and the value should stay a string rather than be converted to a number.
+// IsNumeric validates that value is a non-empty string containing only ASCII digits.
+// It returns an error when value is not a string or contains any other characters.
 func IsNumeric(value interface{}) error {
 	str, ok := value.(string)
 	if !ok {
@@ -414,7 +415,7 @@ func IsAlpha(value interface{}) error {
 	return nil
 }
 
-// IsAlphaNumeric checks if a string contains only alphanumeric characters using regex.
+// IsAlphaNumericRegex validates that a string contains only ASCII letters and digits.
 func IsAlphaNumericRegex(value interface{}) error {
 	str, ok := value.(string)
 	if !ok {
