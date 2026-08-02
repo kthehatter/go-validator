@@ -73,6 +73,30 @@ func TestIsAlphanumeric(t *testing.T) {
 	}
 }
 
+// TestIsNumeric tests the IsNumeric validator.
+func TestIsNumeric(t *testing.T) {
+	tests := []struct {
+		name  string
+		input interface{}
+		error error
+	}{
+		{"valid numeric", "12345", nil},
+		{"valid with leading zero", "00123", nil},
+		{"contains letters", "123abc", errors.New("value must contain only numeric characters")},
+		{"contains special chars", "123-456", errors.New("value must contain only numeric characters")},
+		{"empty string", "", errors.New("value must contain only numeric characters")},
+		{"invalid type (int)", 123, errors.New("value must be a string")},
+		{"invalid type (float)", 123.45, errors.New("value must be a string")},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := IsNumeric(test.input)
+			require.Equal(t, test.error, err)
+		})
+	}
+}
+
 // TestIsEmail tests the IsEmail validator.
 func TestIsEmail(t *testing.T) {
 	tests := []struct {
@@ -503,7 +527,7 @@ func TestIsAlpha(t *testing.T) {
 	}
 }
 
-func TestIsAlphaNumeric(t *testing.T) {
+func TestIsAlphaNumericRegex(t *testing.T) {
 	tests := []struct {
 		name  string
 		input interface{}
@@ -516,7 +540,7 @@ func TestIsAlphaNumeric(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := IsAlphaNumeric(test.input)
+			err := IsAlphaNumericRegex(test.input)
 			require.Equal(t, test.error, err)
 		})
 	}
