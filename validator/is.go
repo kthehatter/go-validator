@@ -414,6 +414,12 @@ func IsAlpha(value interface{}) error {
 	return nil
 }
 
+// Deprecated: use IsAlphaNumericRegex instead. IsAlphaNumeric will be
+// removed in a future major version.
+func IsAlphaNumeric(value interface{}) error {
+	return IsAlphaNumericRegex(value)
+}
+
 // IsAlphaNumeric checks if a string contains only alphanumeric characters using regex.
 func IsAlphaNumericRegex(value interface{}) error {
 	str, ok := value.(string)
